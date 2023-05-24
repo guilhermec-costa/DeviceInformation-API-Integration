@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from requisitions import get_by_deveui, start_getting, success_generated
+from requisitions import start_getting, success_generated
 from convert_files import convert, read_file
 from PIL import Image
 
@@ -38,8 +38,8 @@ with st.form(key='deveui text input'):
     dev_digitados = [item.strip() for item in dev_digitados]
     if st.form_submit_button(label='Iniciar requisição'):
         df = start_getting(pd.DataFrame(columns=['deveui'], data=dev_digitados), header=headers)
-        converted=convert(df)
+        converted_text_input=convert(df)
 try:
-    success_generated(df, converted_to_csv=converted)
+    success_generated(df, converted_to_csv=converted_text_input)
 except:
     pass
