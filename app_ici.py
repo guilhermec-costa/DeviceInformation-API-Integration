@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from requisitions import start_getting, success_generated
+from requisitions import start_getting, success_generated, get_by_serial
 from convert_files import convert, read_file
 from PIL import Image
 
@@ -43,3 +43,18 @@ try:
     success_generated(df, converted_to_csv=converted_text_input)
 except:
     pass
+
+st.markdown("###")
+st.markdown('---')
+plm_digitados = st.text_area(label='Digite PLM"s aqui, separados por vírgula').strip()
+plm_digitados = plm_digitados.split(',')
+plm_digitados = [item.strip() for item in plm_digitados]
+if plm_digitados is not "":
+    with st.form(key='get_by_plm'):
+        if st.form_submit_button(label='Iniciar requisição'):
+            seriais = get_by_serial(*plm_digitados, header=headers)
+            df = pd.DataFrame.from_dict(data=seriais, orient='index', columns=['PLM']).reset_index()
+    try:
+        st.write(df)
+    except:
+        pass
