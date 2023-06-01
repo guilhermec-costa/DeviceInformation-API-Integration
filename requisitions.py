@@ -1,37 +1,42 @@
 import requests
 import streamlit as st
 import pandas as pd
-
-def criar_objeto():
-    objeto = {}
-    return objeto
-
-def start_getting(df, header):
-    df[['BoxSerial', 'Serial']] = df['deveui'].apply(lambda x: pd.Series(get_by_deveui(x, header=header)))
-    return df
-
-def get_by_deveui(deveui, header):
-    url = f"http://34.218.70.208:99/devices/?devEui={deveui}"
-    try:
-        r = requests.get(url=url, headers=header)
-        st.spinner(text='Buscando BoxSeriais e Seriais')
-        return {'BoxSerial': r.json().get('boxSerial'), 'Serial': r.json().get('serial')}
-    except:
-        return {'BoxSerial':'-', 'Serial':'-'}
-
-def get_by_serial(*serial:list, header):
-    dicio = criar_objeto()
-    for plm in serial:
-        url = f'http://34.218.70.208:99/devices/get-by-serial?serial={plm}'
-        try:
-            r = requests.get(url=url, headers=header)
-            dicio[f'{plm}'] = r.json().get('devEui')
-        except:
-            dicio[f'{plm}'] = f'Verificar PLM "{plm}"'
-    return dicio
     
 def success_generated(df, converted_to_csv):
     st.success('Arquivo gerado com sucesso!')
     st.write('Prévia do arquivo: ')
     st.write(df.head())
     st.download_button(label='Clique aqui para baixá-lo', data=converted_to_csv, file_name='deveuis.csv', mime='text/csv')
+
+
+def get_by_plm_remake(*plms, header, fields):
+    lista_dicios = []
+    for plm in plms[0]:
+        plm = plm.strip()
+        dicio_vazio = {}
+        url = f'http://34.218.70.208:99/devices/get-by-serial?serial={plm}'
+        try:
+            for field in fields:
+                r = requests.get(url=url, headers=header)
+                st.spinner(text='Buscando BoxSeriais e Seriais')
+                dicio_vazio[f'{field}'] = r.json().get(f'{field}')
+        except:
+            dicio_vazio[f'{field}'] = f'Verifique a PLM {plm}'
+        lista_dicios.append(dicio_vazio)
+    return lista_dicios
+
+def get_by_deveui_remake(*deveuis, header, fields):
+    lista_dicios = []
+    for deveui in deveuis[0]:
+        deveui = deveui.strip()
+        dicio_vazio = {}
+        url = f"http://34.218.70.208:99/devices/?devEui={deveui}"
+        try:
+            for field in fields:
+                r = requests.get(url=url, headers=header)
+                st.spinner(text='Buscando BoxSeriais e Seriais')
+                dicio_vazio[f'{field}'] = r.json().get(f'{field}')
+        except:
+            dicio_vazio[f'{field}'] = f'Verifique o devEui {deveui}'
+        lista_dicios.append(dicio_vazio)
+    return lista_dicios
