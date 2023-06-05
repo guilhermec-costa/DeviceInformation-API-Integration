@@ -4,9 +4,9 @@ from requisitions import get_by_plm_remake, success_generated
 from convert_files import convert
 
 def serial_forms(header, fields_to_search):
-    plm_digitados = st.text_area(label='Digite PLM"s aqui, separados por vírgula').strip()
+    plm_digitados = st.text_area(label="Digite PLM's aqui, separados por vírgula").strip()
     plm_digitados = plm_digitados.split(',')
-    if plm_digitados is not "":
+    if plm_digitados[0] != "":
         with st.form(key='get_by_plm'):
             if st.form_submit_button(label='Iniciar requisição'):
                 data = get_by_plm_remake(plm_digitados, header=header, fields=fields_to_search)

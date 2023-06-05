@@ -5,8 +5,8 @@ import pandas as pd
 
 
 def deveui_forms(header, fields_to_search):
-    dev_digitados = st.text_area('Digite deveuis nesse campo separados por vírgula:').split(',')
-    if dev_digitados is not "":
+    dev_digitados = st.text_area("Digite DevEui's nesse campo separados por vírgula:").split(',')
+    if dev_digitados[0] != "":
         with st.form(key='get_by_deveui'):
             if st.form_submit_button(label='Iniciar requisição'):
                 data = get_by_deveui_remake(dev_digitados, header=header, fields=fields_to_search)
