@@ -25,7 +25,7 @@ with checkbox1:
     deveui_select_box = SelectBoxes(label='Habilitar DevEUI', key='devEui', start_mode=True)
     plm_select_box = SelectBoxes(label='Habilitar PLM', key='serial', start_mode=True)
     boxserial = SelectBoxes(label='Habilitar Box Serial', key='boxSerial', start_mode=True)
-    device_adress = SelectBoxes(label='EnaHabilitarle Device Adress', key='deviceAddress', start_mode=True)
+    device_adress = SelectBoxes(label='Habilitar Device Adress', key='deviceAddress', start_mode=True)
 with checkbox2:
     created_at = SelectBoxes(label='Habilitar Creation Date', key='createdAt', start_mode=False)
     applicationKey = SelectBoxes(label='Habilitar Application Key', key='applicationKey', start_mode=False)
