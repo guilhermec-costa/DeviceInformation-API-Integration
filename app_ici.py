@@ -1,25 +1,30 @@
 import streamlit as st
 import pandas as pd
-from requisitions import success_generated, get_by_deveui_remake
+from requisition import requisitions
 from convert_files import convert, read_file
 from PIL import Image
-from request_options import by_deveui_text, by_plm_text
 from select_boxes import SelectBoxes
+from requisition_forms import RequisitionForm
+from format_columns import format_dfcolumns, add_extra_columns, validate_data
 
 
 st.set_page_config(layout='centered')
-
 with open('token.txt', 'r') as token:
     content = token.read()
+
+with open('style.css', 'r') as style:
+    st.markdown(f'<style>{style.read()}</style>', unsafe_allow_html=True)
 
 headers = {'Authorization': f'{content}'}
 
 arquivo = st.file_uploader(label='Escolha um arquivo')
 imagem = Image.open(r'sheet_template.PNG')
-st.image(image=imagem, caption='Planilha de exemplo')
+st.image(image=imagem, caption='Planilha de exemplo', width=250)
 st.markdown('---')
 
 colunas = []
+project_options = ['devices', 'everynet-devices', 'nbiot-devices']
+project = st.selectbox(label='Selecione um projeto', options=project_options, disabled=False)
 checkbox1, checkbox2 = st.columns(2)
 with checkbox1:
     deveui_select_box = SelectBoxes(label='Habilitar DevEUI', key='devEui', start_mode=True)
@@ -43,29 +48,31 @@ for item in SelectBoxes.all_select_boxes:
             colunas.remove(key)
 
 if arquivo is not None:
-        df = read_file(file=arquivo)
-        if df is not None:
-            for item in colunas:
-                if item != 'devEui':
-                    df[item] = ''
-
-            with st.form(key='gerar relatorio'):
-                if st.form_submit_button(label='Gerar relatório'):
-                    with st.spinner('Gerando arquivo com Box Serial e Serial Number...'):
-                        deveuis_escolhidos = df['devEui'].to_list()
-                        data = get_by_deveui_remake(deveuis_escolhidos, header=headers, fields=colunas)
-                        df = pd.DataFrame(data)
-                        converted = convert(df)
-            try:
-                success_generated(df, converted_to_csv=converted)
-            except:
-                pass
-        else:
-            st.warning('Verifique se o arquivo subido possui extensão CSV ou XLSX')
+        data, extension = read_file(file=arquivo)
+        is_valid = validate_data(data, extension)
+        if extension in ('.csv', '.xlsx'):
+            if is_valid:
+                df = add_extra_columns(data, extra_columns=colunas)
+                deveuis_escolhidos = df['devEui'].to_list()
+                data = requisitions.start_requisition(deveuis_escolhidos, header=headers, fields=colunas,
+                                                            info_type='deveuis_dataframe', project=project)
+                df = pd.DataFrame(data)
+                converted = convert(df)
+                try:
+                    requisitions.success_generated(df, converted_to_csv=converted)
+                except:
+                    pass
+            else:
+                st.warning('Verifique se os dados subidos possuem uma coluna de nome "deveui" ou se não está vazia.')
 
 st.markdown('---')
-
 st.markdown("###")
 
-by_plm_text.serial_forms(header=headers, fields_to_search=colunas)
-by_deveui_text.deveui_forms(header=headers, fields_to_search=colunas)
+byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula")
+requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='plm', project=project)
+    
+byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:")
+requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project)
+    
+bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:")
+requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project)

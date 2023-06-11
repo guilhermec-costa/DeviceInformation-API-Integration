@@ -1,0 +1,26 @@
+.css-uyx2lz {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+    padding: 0.5rem 1rem; /* Aumenta o espaçamento interno do botão */
+    border-radius: 0.5rem; /* Aumenta o raio do arredondamento das bordas */
+    margin: 0;
+    line-height: 1.6;
+    color: white; /* Define a cor do texto para branco */
+    width: auto;
+    user-select: none;
+    background-color: rgb(19, 23, 32);
+    border: 1px solid rgba(250, 250, 250, 0.2);
+    text-decoration: none; /* Remove a decoração de sublinhado */
+    transition: background-color 0.3s ease; /* Adiciona uma transição suave ao alterar a cor de fundo */
+  }
+  
+.css-uyx2lz:hover {
+    background-color: #32497C; /* Define uma cor de fundo diferente ao passar o mouse */
+  }
+  
+.css-uyx2lz:focus {
+    outline: none; /* Remove a borda de foco padrão */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Adiciona uma sombra ao receber foco */
+  }

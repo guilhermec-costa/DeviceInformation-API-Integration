@@ -12,6 +12,9 @@ def get_extension(PATH):
 def read_file(file):
     name, extension = get_extension(file.name)
     if extension in ('.xlsx', '.xls'):
-        return pd.read_excel(file)
+        data = pd.read_excel(file)
     elif extension == '.csv':
-        return pd.read_csv(file)
+        data = pd.read_csv(file)
+    else:
+        data = ""
+    return data, extension
