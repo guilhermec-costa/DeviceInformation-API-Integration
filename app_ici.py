@@ -9,13 +9,11 @@ from format_columns import format_dfcolumns, add_extra_columns, validate_data
 
 
 st.set_page_config(layout='centered')
-with open('token.txt', 'r') as token:
-    content = token.read()
 
 with open('style.css', 'r') as style:
     st.markdown(f'<style>{style.read()}</style>', unsafe_allow_html=True)
 
-headers = {'Authorization': f'{content}'}
+headers = {'Authorization': f'{st.secrets["token"]}'}
 
 arquivo = st.file_uploader(label='Escolha um arquivo')
 imagem = Image.open(r'sheet_template.PNG')
