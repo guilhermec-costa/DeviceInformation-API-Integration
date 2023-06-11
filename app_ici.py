@@ -13,7 +13,8 @@ st.set_page_config(layout='centered')
 with open('style.css', 'r') as style:
     st.markdown(f'<style>{style.read()}</style>', unsafe_allow_html=True)
 
-headers = {'Authorization': f'{st.secrets["token"]}'}
+
+headers = {'Authorization': f'{st.secrets.token}'}
 
 arquivo = st.file_uploader(label='Escolha um arquivo')
 imagem = Image.open(r'sheet_template.PNG')
