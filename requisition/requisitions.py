@@ -34,7 +34,7 @@ def start_requisition(*content, header, fields, info_type, project):
                             empty_dict[f'{field}'] = f'Verifique o {info_type} "{element}"'
                         dict_list.append(empty_dict)
     if len(dict_list) > 0:
-        build_datatable(dict_list, filename=f'{info_type}-{project}-{datetime.now().strftime("%d-%M-%Y")}')
+        build_datatable(dict_list, filename=f'{info_type}-{project}-{datetime.now().strftime("%d-%M-%Y")}.csv')
 
 def build_datatable(data, filename):
     try:
