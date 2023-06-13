@@ -22,3 +22,4 @@ def read_file(file):
         return data, extension, name
     except:
         st.warning('Verifique se o arquivo não está corrompido.')
+        return "", "", ""
