@@ -10,10 +10,10 @@ def success_generated(df, converted_to_csv, filename):
     st.write(df)
     st.download_button(label='Clique aqui para baixá-lo', data=converted_to_csv, file_name=filename, mime='text/csv')
 
-def start_requisition(*content, header, fields, info_type, project):
+def start_requisition(*content, header, fields, info_type, project, form_key):
     dict_list = []
     if content[0][0] != "":
-        with st.form(key=f'data_frame-{info_type}'):
+        with st.form(key=f'data_frame - {form_key} - {info_type}'):
             if st.form_submit_button(label='Submit'):
                 with st.spinner(text='Gerando dados...'):
                     for element in content[0]:

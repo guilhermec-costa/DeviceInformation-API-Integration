@@ -6,6 +6,7 @@ from PIL import Image
 from select_boxes import SelectBoxes
 from requisition_forms import RequisitionForm
 from format_columns import format_dfcolumns, validate_data
+from datetime import datetime
 
 
 st.set_page_config(layout='centered')
@@ -53,7 +54,7 @@ if arquivo is not None:
             get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
             devices_escolhidos = data[get_option].to_list()
             data = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
-                                                        info_type=get_option.lower(), project=project)
+                                                        info_type=get_option.lower(), project=project, form_key=f'data_frame - {get_option}')
             df = pd.DataFrame(data)
             converted = convert(df)
             if data is not None:
@@ -62,11 +63,11 @@ if arquivo is not None:
 st.markdown('---')
 st.markdown("###")
 
-byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula")
-requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project)
+byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key=f'PLM-forms')
+requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
     
-byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:")
-requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project)
+byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key=f'DEVEUI-forms')
+requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
     
-bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:")
-requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project)
+bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key=f'SERIALBOX-forms')
+requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
