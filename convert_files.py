@@ -9,6 +9,7 @@ def get_extension(PATH):
     name, extension = os.path.splitext(PATH)
     return name, extension
 
+st.cache_data()
 def read_file(file):
     name, extension = get_extension(file.name)
     if extension in ('.xlsx', '.xls'):
@@ -17,4 +18,4 @@ def read_file(file):
         data = pd.read_csv(file)
     else:
         data = ""
-    return data, extension
+    return data, extension, name

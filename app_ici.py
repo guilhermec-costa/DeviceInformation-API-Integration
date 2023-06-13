@@ -5,7 +5,7 @@ from convert_files import convert, read_file
 from PIL import Image
 from select_boxes import SelectBoxes
 from requisition_forms import RequisitionForm
-from format_columns import format_dfcolumns, add_extra_columns, validate_data
+from format_columns import format_dfcolumns, validate_data
 
 
 st.set_page_config(layout='centered')
@@ -17,8 +17,8 @@ with open('style.css', 'r') as style:
 headers = {'Authorization': f'{st.secrets.token}'}
 
 arquivo = st.file_uploader(label='Escolha um arquivo')
-imagem = Image.open(r'sheet_template.PNG')
-st.image(image=imagem, caption='Planilha de exemplo', width=250)
+imagem = Image.open(r'template_sheet.PNG')
+st.image(image=imagem, caption='Planilha de exemplo. Deve conter pelo menos uma dessas colunas, independente de maíusculas ou minúsculas.', width=500)
 st.markdown('---')
 
 colunas = []
@@ -39,7 +39,6 @@ SelectBoxes.all_select_boxes = [deveui_select_box.select_box, plm_select_box.sel
                                 networkkey.select_box, boxserial.select_box, device_adress.select_box, created_at.select_box]
 
 for item in SelectBoxes.all_select_boxes:
-    columns_list = [key for key, value in item.items() if value]
     for key, value in item.items():
         if value and key not in colunas:
             colunas.append(key)
@@ -47,28 +46,24 @@ for item in SelectBoxes.all_select_boxes:
             colunas.remove(key)
 
 if arquivo is not None:
-        data, extension = read_file(file=arquivo)
-        is_valid = validate_data(data, extension)
-        if extension in ('.csv', '.xlsx'):
-            if is_valid:
-                df = add_extra_columns(data, extra_columns=colunas)
-                deveuis_escolhidos = df['devEui'].to_list()
-                data = requisitions.start_requisition(deveuis_escolhidos, header=headers, fields=colunas,
-                                                            info_type='deveuis_dataframe', project=project)
-                df = pd.DataFrame(data)
-                converted = convert(df)
-                try:
-                    requisitions.success_generated(df, converted_to_csv=converted)
-                except:
-                    pass
-            else:
-                st.warning('Verifique se os dados subidos possuem uma coluna de nome "deveui" ou se não está vazia.')
+        data, extension, name = read_file(file=arquivo)
+        is_valid, valid_get_options = validate_data(data, extension)
+        if is_valid:
+            st.success(f'Arquivo "{name + extension}" lido e formatado com sucesso.')
+            get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
+            devices_escolhidos = data[get_option].to_list()
+            data = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
+                                                        info_type=get_option.lower(), project=project)
+            df = pd.DataFrame(data)
+            converted = convert(df)
+            if data is not None:
+                requisitions.success_generated(df, converted_to_csv=converted)
 
 st.markdown('---')
 st.markdown("###")
 
 byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula")
-requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='plm', project=project)
+requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project)
     
 byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:")
 requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project)
