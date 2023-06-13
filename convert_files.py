@@ -12,10 +12,13 @@ def get_extension(PATH):
 st.cache_data()
 def read_file(file):
     name, extension = get_extension(file.name)
-    if extension in ('.xlsx', '.xls', '.csv'):
-        data = pd.read_excel(file)
-    elif extension == '.csv':
-        data = pd.read_csv(file)
-    else:
-        data = ""
-    return data, extension, name
+    try:
+        if extension in ('.xlsx', '.xls'):
+            data = pd.read_excel(file)
+        elif extension == '.csv':
+            data = pd.read_csv(file)
+        else:
+            data = ""
+        return data, extension, name
+    except:
+        st.warning('Verifique se o arquivo não está corrompido.')
