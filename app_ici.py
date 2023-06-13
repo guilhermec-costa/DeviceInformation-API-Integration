@@ -5,15 +5,12 @@ from convert_files import convert, read_file
 from PIL import Image
 from select_boxes import SelectBoxes
 from requisition_forms import RequisitionForm
-from format_columns import format_dfcolumns, validate_data
-from datetime import datetime
-
+from format_columns import validate_data
 
 st.set_page_config(layout='centered')
 
 with open('style.css', 'r') as style:
     st.markdown(f'<style>{style.read()}</style>', unsafe_allow_html=True)
-
 
 headers = {'Authorization': f'{st.secrets.token}'}
 
@@ -63,11 +60,11 @@ if arquivo is not None:
 st.markdown('---')
 st.markdown("###")
 
-byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key=f'PLM-forms')
+byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key='PLM-forms')
 requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
     
-byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key=f'DEVEUI-forms')
+byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key='DEVEUI-forms')
 requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
     
-bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key=f'SERIALBOX-forms')
+bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key='SERIALBOX-forms')
 requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
