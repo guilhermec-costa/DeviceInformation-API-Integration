@@ -32,8 +32,9 @@ def start_requisition(*content, header, fields, info_type, project, form_key):
                         except:
                             empty_dict[f'{field}'] = f'Verifique o {info_type} "{element}"'
                         dict_list.append(empty_dict)
-    if len(dict_list) > 0:
-        build_datatable(dict_list, filename=f'{info_type}-{project}-{(datetime.now() - timedelta(hours=-3)).strftime("%d-%M-%Y")}.csv')
+        if len(dict_list) > 0:
+            build_datatable(dict_list, filename=f'{info_type}-{project}-{(datetime.now() - timedelta(hours=-3)).strftime("%d-%M-%Y")}.csv')
+            return dict_list
 
 def build_datatable(data, filename):
     df = pd.DataFrame(data)

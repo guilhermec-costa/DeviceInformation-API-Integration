@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from requisition import requisitions
-from convert_files import convert, read_file
+from convert_files import read_file
 from PIL import Image
 from select_boxes import SelectBoxes
 from requisition_forms import RequisitionForm
@@ -60,10 +60,13 @@ st.markdown('---')
 st.markdown("###")
 
 byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key='PLM-forms')
-plm_requisitions = requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
+if byPlmForms.content[0] != "":
+    plm_requisitions = requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
     
 byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key='DEVEUI-forms')
-deveui_requitions = requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
+if byDeveuiForms.content[0] != "":
+    deveui_requitions = requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
     
 bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key='SERIALBOX-forms')
-boxserial_requisitions = requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
+if bySerialBoxForms.content[0] != "":
+    boxserial_requisitions = requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
