@@ -51,12 +51,8 @@ if arquivo is not None:
                 st.success(f'Arquivo "{name + extension}" lido e formatado com sucesso.')
                 get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
                 devices_escolhidos = data[get_option].to_list()
-                data = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
+                data_frame_requisitions = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
                                                             info_type=get_option.lower(), project=project, form_key=f'data_frame - {get_option}')
-                df = pd.DataFrame(data)
-                converted = convert(df)
-                if data is not None:
-                    requisitions.success_generated(df, converted_to_csv=converted)
             else:
                 st.warning('Verifique se o arquivo subido possui pelo menos umas das seguintes colunas: "deveui", "serial" ou "serialbox" ou se tem pelos menos uma linha de valores.')
 
@@ -64,10 +60,10 @@ st.markdown('---')
 st.markdown("###")
 
 byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key='PLM-forms')
-requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
+plm_requisitions = requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
     
 byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key='DEVEUI-forms')
-requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
+deveui_requitions = requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
     
 bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key='SERIALBOX-forms')
-requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
+boxserial_requisitions = requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
