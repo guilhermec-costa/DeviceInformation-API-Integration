@@ -45,17 +45,20 @@ for item in SelectBoxes.all_select_boxes:
 
 if arquivo is not None:
         data, extension, name = read_file(file=arquivo)
-        is_valid, valid_get_options = validate_data(data, extension)
-        if is_valid:
-            st.success(f'Arquivo "{name + extension}" lido e formatado com sucesso.')
-            get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
-            devices_escolhidos = data[get_option].to_list()
-            data = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
-                                                        info_type=get_option.lower(), project=project, form_key=f'data_frame - {get_option}')
-            df = pd.DataFrame(data)
-            converted = convert(df)
-            if data is not None:
-                requisitions.success_generated(df, converted_to_csv=converted)
+        if data is not None:
+            is_valid, valid_get_options = validate_data(data, extension)
+            if is_valid:
+                st.success(f'Arquivo "{name + extension}" lido e formatado com sucesso.')
+                get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
+                devices_escolhidos = data[get_option].to_list()
+                data = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
+                                                            info_type=get_option.lower(), project=project, form_key=f'data_frame - {get_option}')
+                df = pd.DataFrame(data)
+                converted = convert(df)
+                if data is not None:
+                    requisitions.success_generated(df, converted_to_csv=converted)
+            else:
+                st.warning('Verifique se o arquivo subido possui pelo menos umas das seguintes colunas: "deveui", "serial" ou "serialbox" ou se tem pelos menos uma linha de valores.')
 
 st.markdown('---')
 st.markdown("###")

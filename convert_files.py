@@ -18,8 +18,9 @@ def read_file(file):
         elif extension == '.csv':
             data = pd.read_csv(file)
         else:
-            data = ""
+            st.warning('Verifique se o arquivo possui extensão CSV, XLSX ou XLS.')
+            data = None
         return data, extension, name
     except:
         st.warning('Verifique se o arquivo não está corrompido.')
-        return "", "", ""
+        return None, None, None
