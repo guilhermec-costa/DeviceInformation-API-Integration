@@ -32,9 +32,10 @@ with checkbox2:
     created_at = SelectBoxes(label='Habilitar Creation Date', key='createdAt', start_mode=False)
     applicationKey = SelectBoxes(label='Habilitar Application Key', key='applicationKey', start_mode=False)
     networkkey = SelectBoxes(label='Habilitar Network Key', key='networkKey', start_mode=False)
+    firmware_updated_at = SelectBoxes(label='Habilitar última data de alteração do firmware', key='updatedAt', start_mode=False)
 
 SelectBoxes.all_select_boxes = [deveui_select_box.select_box, plm_select_box.select_box, applicationKey.select_box, networkkey.select_box,
-                                networkkey.select_box, boxserial.select_box, device_adress.select_box, created_at.select_box]
+                                networkkey.select_box, boxserial.select_box, device_adress.select_box, created_at.select_box, firmware_updated_at.select_box]
 
 for item in SelectBoxes.all_select_boxes:
     for key, value in item.items():
