@@ -1,5 +1,5 @@
 Pillow==9.5.0
 pandas==2.0.1
-streamlit==1.22.0
+streamlit==1.23.1
 xlrd>=2.0.1
 openpyxl==3.1.2
