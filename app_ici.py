@@ -65,6 +65,7 @@ colunas_firmware = []
 st.subheader(body='Informações do firmware')
 firmware_file = st.file_uploader(label='Escolha um arquivo', key='firmware_file')
 
+
 deveui_firmware = Firmware(label='Habilitar DevEui', key='deviceEui', start_mode=True, disabled=False)
 firmware_updated_at = Firmware(label='Habilitar última data de alteração do firmware', key='Execution Date', start_mode=False)
 firmware_binary_version = Firmware(label='Habilitar última versão do firmware', key='Binary Version', start_mode=True)

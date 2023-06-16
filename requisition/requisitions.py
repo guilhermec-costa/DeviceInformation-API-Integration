@@ -16,21 +16,25 @@ def success_generated(df, converted_to_csv, filename):
     st.write(df)
     st.download_button(label='Clique aqui para baixá-lo', data=converted_to_csv, file_name=filename, mime='text/csv')
 
+def build_datatable(data, filename):
+    df = pd.DataFrame(data)
+    converted = convert(df)
+    success_generated(df, converted_to_csv=converted, filename=filename)
+
 async def get_binary_version(element, header, fields_to_search, empty_obj, session):
     url = f'http://34.218.70.208:99/json-logs/get-all-by-dev-eui?devEui={element}'
-    # Json só aceita aspas duplas
     async with session.get(url, headers=header) as r:
-        try:
-            content = await r.json()
-            for field in fields_to_search:
+        for field in fields_to_search:
+            try:
+                content = (await r.json())[0]
                 if field == 'deviceEui':
-                    empty_obj[f'{field}'] = content[0].get(field)
+                    empty_obj[f'{field}'] = content.get(field)
                 else:
-                    execution_date = json.loads(content[0].get('log').replace('"', "'").replace("'", '"'))
+                    execution_date = eval(content.get('log'))
                     empty_obj[f'{field}'] = execution_date.get(field)
-        except:
-            empty_obj[f'{field}'] = f'Verifique o deveui "{element}"'
-        return empty_obj
+            except:
+                empty_obj[f'{field}'] = f'Verifique o deveui "{element}"'
+    return empty_obj
 
 async def get_device_info(element, project, info_type, session,
                     empty_obj, fields_to_search, header):
@@ -40,26 +44,25 @@ async def get_device_info(element, project, info_type, session,
         'boxserial': f'http://34.218.70.208:99/{project}/get-by-box-serial?boxSerial={element}'
     }
     base_url = url_mapping.get(info_type)
-    
-    
+       
     async with session.get(base_url, headers=header) as r:
-        try:
-            for field in fields_to_search:
+
+        for field in fields_to_search:
+            try:
                 content = await r.json()
-                # r = session.get(url=base_url, headers=header)
                 empty_obj[f'{field}'] = content.get(field)
-        except:
-            empty_obj[f'{field}'] = f'Verifique o {info_type} "{element}"'
-        return empty_obj
+            except:
+                empty_obj[f'{field}'] = f'Verifique o {info_type} "{element}"'
+    return empty_obj
 
 async def start_requisition(*content, header, fields, info_type, project="devices", form_key, requisiton_function):
-    start = time.perf_counter()
     dict_list = []
     async with aiohttp.ClientSession() as session:
         with st.form(key=f'data_frame - {form_key} - {info_type}'):
-            if st.form_submit_button(label='Submit'):
+            if st.form_submit_button(label='Requisitar'):
                 with st.spinner('Gerando dados...'):
-                    for element in content[0]:
+                    for n in stqdm(range(len(content[0]))):
+                        element = content[0][n]
                         empty_dict = {}
                         if requisiton_function == 'get_device_info':
                             data = await get_device_info(element=element, project=project, info_type=info_type, session=session,
@@ -69,11 +72,10 @@ async def start_requisition(*content, header, fields, info_type, project="device
                             data = await get_binary_version(element=element, empty_obj=empty_dict, fields_to_search=fields,
                                                     header=header, session=session)
                         dict_list.append(data)
+                        asyncio.sleep(0.1)
     
         if len(dict_list) > 0:
             build_datatable(dict_list, filename=f'{info_type}-{project}-{(datetime.now() - timedelta(hours=-3)).strftime("%d-%M-%Y")}.csv')
-            finish = time.perf_counter()
-            st.write(f'Requisição terminada em {finish - start}')
 
 def requis_for_dataframes(arquivo, requis_type, fields_to_search, project, headers):
     data, extension, name = read_file(file=arquivo)
@@ -90,8 +92,3 @@ def requis_for_dataframes(arquivo, requis_type, fields_to_search, project, heade
                                                 project=project, form_key=f'data_frame - {get_option} - {requis_type}'))
         else:
             st.warning('Verifique se o arquivo subido possui pelo menos umas das seguintes colunas: "deveui", "serial" ou "serialbox" ou se tem pelos menos uma linha de valores.')
-
-def build_datatable(data, filename):
-    df = pd.DataFrame(data)
-    converted = convert(df)
-    success_generated(df, converted_to_csv=converted, filename=filename)
