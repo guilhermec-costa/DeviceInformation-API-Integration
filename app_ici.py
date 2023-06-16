@@ -1,11 +1,9 @@
 import streamlit as st
-import pandas as pd
 from requisition import requisitions
-from convert_files import read_file
 from PIL import Image
-from select_boxes import SelectBoxes
+from select_boxes import SelectBoxes, Firmware, populate_selectboxes_list
 from requisition_forms import RequisitionForm
-from format_columns import validate_data
+import asyncio
 
 st.set_page_config(layout='centered')
 
@@ -14,7 +12,7 @@ with open('style.css', 'r') as style:
 
 headers = {'Authorization': f'{st.secrets.token}'}
 
-arquivo = st.file_uploader(label='Escolha um arquivo')
+devices_file = st.file_uploader(label='Escolha um arquivo', key='device file')
 imagem = Image.open(r'template_sheet.PNG')
 st.image(image=imagem, caption='Planilha de exemplo. Deve conter pelo menos uma dessas colunas, independente de maíusculas ou minúsculas.', width=500)
 st.markdown('---')
@@ -32,42 +30,56 @@ with checkbox2:
     created_at = SelectBoxes(label='Habilitar Creation Date', key='createdAt', start_mode=False)
     applicationKey = SelectBoxes(label='Habilitar Application Key', key='applicationKey', start_mode=False)
     networkkey = SelectBoxes(label='Habilitar Network Key', key='networkKey', start_mode=False)
-    firmware_updated_at = SelectBoxes(label='Habilitar última data de alteração do firmware', key='updatedAt', start_mode=False)
 
 SelectBoxes.all_select_boxes = [deveui_select_box.select_box, plm_select_box.select_box, applicationKey.select_box, networkkey.select_box,
-                                networkkey.select_box, boxserial.select_box, device_adress.select_box, created_at.select_box, firmware_updated_at.select_box]
+                                networkkey.select_box, boxserial.select_box, device_adress.select_box, created_at.select_box]
 
-for item in SelectBoxes.all_select_boxes:
-    for key, value in item.items():
-        if value and key not in colunas:
-            colunas.append(key)
-        elif value is False and key in colunas:
-            colunas.remove(key)
+populate_selectboxes_list(col_to_populate=colunas, col_populated=SelectBoxes.all_select_boxes)
 
-if arquivo is not None:
-        data, extension, name = read_file(file=arquivo)
-        if data is not None:
-            is_valid, valid_get_options = validate_data(data, extension)
-            if is_valid:
-                st.success(f'Arquivo "{name + extension}" lido e formatado com sucesso.')
-                get_option = st.radio(label='Escolha a coluna base da planilha para fazer as requisições:', options=valid_get_options, horizontal=True)
-                devices_escolhidos = data[get_option].to_list()
-                data_frame_requisitions = requisitions.start_requisition(devices_escolhidos, header=headers, fields=colunas,
-                                                            info_type=get_option.lower(), project=project, form_key=f'data_frame - {get_option}')
-            else:
-                st.warning('Verifique se o arquivo subido possui pelo menos umas das seguintes colunas: "deveui", "serial" ou "serialbox" ou se tem pelos menos uma linha de valores.')
+if devices_file is not None:
+    requisitions.requis_for_dataframes(devices_file, requis_type='get_device_info', fields_to_search=colunas, 
+                          project=project, headers=headers)
 
 st.markdown('---')
 st.markdown("###")
 
 byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key='PLM-forms')
-if byPlmForms.content[0] != "":
-    plm_requisitions = requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key)
+if byPlmForms.content[0] != '':
+    plm_requisitions = asyncio.run(requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key,
+                                                      requisiton_function='get_device_info'))
     
 byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key='DEVEUI-forms')
-if byDeveuiForms.content[0] != "":
-    deveui_requitions = requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key)
+if byDeveuiForms.content[0] != '':
+    deveui_requitions = asyncio.run(requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key,
+                                                       requisiton_function='get_device_info'))
     
 bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key='SERIALBOX-forms')
-if bySerialBoxForms.content[0] != "":
-    boxserial_requisitions = requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key)
+if bySerialBoxForms.content[0] != '':
+    boxserial_requisitions = asyncio.run(requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key,
+                                                            requisiton_function='get_device_info'))
+
+
+st.markdown('---')
+st.markdown('###')
+colunas_firmware = []
+st.subheader(body='Informações do firmware')
+firmware_file = st.file_uploader(label='Escolha um arquivo', key='firmware_file')
+
+
+deveui_firmware = Firmware(label='Habilitar DevEui', key='deviceEui', start_mode=True, disabled=False)
+firmware_updated_at = Firmware(label='Habilitar última data de alteração do firmware', key='Execution Date', start_mode=False)
+firmware_binary_version = Firmware(label='Habilitar última versão do firmware', key='Binary Version', start_mode=True)
+device_last_rssi = Firmware(label='Habilitar último RSSI', key='Network Data Send RSSI Value', start_mode=False)
+Firmware.firmware_select_boxes = [deveui_firmware.select_box, firmware_binary_version.select_box,
+                                   firmware_updated_at.select_box, device_last_rssi.select_box]
+populate_selectboxes_list(col_to_populate=colunas_firmware, col_populated=Firmware.firmware_select_boxes)
+
+
+if firmware_file is not None:
+    requisitions.requis_for_dataframes(firmware_file, requis_type='firmware_info', fields_to_search=colunas_firmware,
+                                       project=project, headers=headers)
+
+firmwareActivation = RequisitionForm('Digite o DevEui nesse campo: ', form_key='firmware_activation')
+if firmwareActivation.content[0] != '':
+    firmware = asyncio.run(requisitions.start_requisition(firmwareActivation.content, header=headers, form_key=firmwareActivation.form_key, fields=colunas_firmware, info_type='firmware_info',
+                                              requisiton_function='firmware_info'))
