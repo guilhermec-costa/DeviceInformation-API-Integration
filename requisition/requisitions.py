@@ -1,23 +1,19 @@
 import streamlit as st
 import pandas as pd
-from convert_files import convert
 from datetime import datetime, timedelta
 import asyncio
 import aiohttp
-from convert_files import read_file
+from convert_files import read_file, convert
 from format_columns import validate_data
 from stqdm import stqdm
     
-def success_generated(df, converted_to_csv, filename):
-    st.success('Arquivo gerado com sucesso!')
-    st.write('Prévia do arquivo: ')
-    st.write(df)
-    st.download_button(label='Clique aqui para baixá-lo', data=converted_to_csv, file_name=filename, mime='text/csv')
-
 def build_datatable(data, filename):
     df = pd.DataFrame(data)
     converted = convert(df)
-    success_generated(df, converted_to_csv=converted, filename=filename)
+    st.success('Arquivo gerado com sucesso!')
+    st.write('Prévia do arquivo: ')
+    st.write(df)
+    st.download_button(label='Clique aqui para baixá-lo', data=converted, file_name=filename, mime='text/csv')
 
 async def get_binary_version(element, header, fields_to_search, empty_obj, session):
     url = f'http://34.218.70.208:99/json-logs/get-all-by-dev-eui?devEui={element}'
@@ -36,10 +32,11 @@ async def get_binary_version(element, header, fields_to_search, empty_obj, sessi
 
 async def get_device_info(element, project, info_type, session,
                     empty_obj, fields_to_search, header):
+    fix_url_part = 'http://34.218.70.208:99/'
     url_mapping = {
-        'serial': f'http://34.218.70.208:99/{project}/get-by-serial?serial={element}',
-        'deveui': f'http://34.218.70.208:99/{project}/?devEui={element}',
-        'boxserial': f'http://34.218.70.208:99/{project}/get-by-box-serial?boxSerial={element}'
+        'serial': f'{fix_url_part}{project}/get-by-serial?serial={element}',
+        'deveui': f'{fix_url_part}{project}/?devEui={element}',
+        'boxserial': f'{fix_url_part}{project}/get-by-box-serial?boxSerial={element}'
     }
     base_url = url_mapping.get(info_type)
        

@@ -4,13 +4,27 @@ from PIL import Image
 from select_boxes import SelectBoxes, Firmware, populate_selectboxes_list
 from requisition_forms import RequisitionForm
 import asyncio
+import generate_token
+import json
 
 st.set_page_config(layout='centered')
+
+payload = json.dumps({
+    'username': f'{st.secrets.api_credentials.username}',
+    'password': f'{st.secrets.api_credentials.password}'
+})
+
+headers = {
+    'Content-Type':'application/json',
+    'Authorization': f'{st.secrets.api_credentials.token}'
+}
 
 with open('style.css', 'r') as style:
     st.markdown(f'<style>{style.read()}</style>', unsafe_allow_html=True)
 
-headers = {'Authorization': f'{st.secrets.token}'}
+headers_to_gen = {'Authorization': f'{st.secrets.api_credentials.token}'}
+token = generate_token.generate_token('http://34.218.70.208:99/login', data=payload, headers=headers)
+headers_to_requis = {'Authorization': token}
 
 devices_file = st.file_uploader(label='Escolha um arquivo', key='device file')
 imagem = Image.open(r'template_sheet.PNG')
@@ -38,24 +52,24 @@ populate_selectboxes_list(col_to_populate=colunas, col_populated=SelectBoxes.all
 
 if devices_file is not None:
     requisitions.requis_for_dataframes(devices_file, requis_type='get_device_info', fields_to_search=colunas, 
-                          project=project, headers=headers)
+                          project=project, headers=headers_to_requis)
 
 st.markdown('---')
 st.markdown("###")
 
 byPlmForms = RequisitionForm("Digite PLM's nesse campo, separados por vírgula", form_key='PLM-forms')
 if byPlmForms.content[0] != '':
-    plm_requisitions = asyncio.run(requisitions.start_requisition(byPlmForms.content, header=headers, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key,
+    plm_requisitions = asyncio.run(requisitions.start_requisition(byPlmForms.content, header=headers_to_requis, fields=colunas, info_type='serial', project=project, form_key=byPlmForms.form_key,
                                                       requisiton_function='get_device_info'))
     
 byDeveuiForms = RequisitionForm("Digite DevEui's nesse campo, separados por vírgula:", form_key='DEVEUI-forms')
 if byDeveuiForms.content[0] != '':
-    deveui_requitions = asyncio.run(requisitions.start_requisition(byDeveuiForms.content, header=headers, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key,
+    deveui_requitions = asyncio.run(requisitions.start_requisition(byDeveuiForms.content, header=headers_to_requis, fields=colunas, info_type='deveui', project=project, form_key=byDeveuiForms.form_key,
                                                        requisiton_function='get_device_info'))
     
 bySerialBoxForms = RequisitionForm("Digite BoxSerial(s) nesse campo, separados por vírgulas:", form_key='SERIALBOX-forms')
 if bySerialBoxForms.content[0] != '':
-    boxserial_requisitions = asyncio.run(requisitions.start_requisition(bySerialBoxForms.content, header=headers, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key,
+    boxserial_requisitions = asyncio.run(requisitions.start_requisition(bySerialBoxForms.content, header=headers_to_requis, fields=colunas, info_type='boxserial', project=project, form_key=bySerialBoxForms.form_key,
                                                             requisiton_function='get_device_info'))
 
 
@@ -77,9 +91,9 @@ populate_selectboxes_list(col_to_populate=colunas_firmware, col_populated=Firmwa
 
 if firmware_file is not None:
     requisitions.requis_for_dataframes(firmware_file, requis_type='firmware_info', fields_to_search=colunas_firmware,
-                                       project=project, headers=headers)
+                                       project=project, headers=headers_to_requis)
 
 firmwareActivation = RequisitionForm('Digite o DevEui nesse campo: ', form_key='firmware_activation')
 if firmwareActivation.content[0] != '':
-    firmware = asyncio.run(requisitions.start_requisition(firmwareActivation.content, header=headers, form_key=firmwareActivation.form_key, fields=colunas_firmware, info_type='firmware_info',
+    firmware = asyncio.run(requisitions.start_requisition(firmwareActivation.content, header=headers_to_requis, form_key=firmwareActivation.form_key, fields=colunas_firmware, info_type='firmware_info',
                                               requisiton_function='firmware_info'))
